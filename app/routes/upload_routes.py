@@ -2,6 +2,7 @@
 from fastapi import APIRouter, UploadFile, File
 from app.models.schemas import UploadResponse
 from app.core.logging import logger
+from app.services.ingestion_service import process_file
 
 router = APIRouter(tags=["Upload"])
 
@@ -19,4 +20,10 @@ async def upload_document(file: UploadFile = File(...)):
     """
     logger.info(f"File received: {file.filename}")
     
-    return UploadResponse(message="file received")
+    # Process file: parse and chunk
+    chunks = await process_file(file)
+    
+    # Log chunk count
+    logger.info(f"File processed successfully: {len(chunks)} chunks created")
+    
+    return UploadResponse(message=f"file received and processed into {len(chunks)} chunks")
