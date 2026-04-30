@@ -22,7 +22,7 @@ async def query_knowledge_base(request: QueryRequest):
     logger.info(f"Query received: {request.question}")
     
     # Retrieve relevant chunks from vector database
-    chunks = retrieve(request.question, top_k=3)
+    chunks = retrieve(request.question, top_k=request.top_k)
     
     if not chunks:
         return QueryResponse(
@@ -36,9 +36,16 @@ async def query_knowledge_base(request: QueryRequest):
     # Generate answer using LLM
     answer = generate_answer(request.question, context)
     
-    # Extract sources from chunks (metadata like filenames if available)
-    sources = [chunk.get('metadata', {}).get('source', f"Chunk {i+1}") 
-               for i, chunk in enumerate(chunks)]
+    # Extract sources from chunks (filename and chunk_id from metadata)
+    sources = []
+    for chunk in chunks:
+        metadata = chunk.get('metadata', {})
+        if metadata:
+            filename = metadata.get('filename', 'unknown')
+            chunk_id = metadata.get('chunk_id', 'N/A')
+            sources.append(f"{filename} (chunk {chunk_id})")
+        else:
+            sources.append("Unknown source")
     
     return QueryResponse(
         answer=answer,

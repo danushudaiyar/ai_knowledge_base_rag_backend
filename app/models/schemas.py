@@ -8,6 +8,7 @@ class QueryRequest(BaseModel):
     Request model for question answering
     """
     question: str = Field(..., description="Question to ask the knowledge base", min_length=1)
+    top_k: Optional[int] = Field(None, description="Number of top results to retrieve", ge=1, le=10)
 
 
 class QueryResponse(BaseModel):
