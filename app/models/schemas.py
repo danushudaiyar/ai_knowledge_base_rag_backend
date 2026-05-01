@@ -24,3 +24,10 @@ class UploadResponse(BaseModel):
     Response model for file upload
     """
     message: str = Field(..., description="Upload status message")
+
+
+class URLUploadRequest(BaseModel):
+    """
+    Request model for URL upload
+    """
+    url: str = Field(..., description="URL to fetch and ingest", min_length=1)
