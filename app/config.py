@@ -28,6 +28,10 @@ class Settings(BaseSettings):
     CHUNK_SIZE: int = 500
     CHUNK_OVERLAP: int = 50
     
+    # User Information
+    USER_NAME: str = "danushudaiyar"
+    USER_EMAIL: str = "danushruff@gmail.com"
+    
     class Config:
         env_file = ".env"
         case_sensitive = True
