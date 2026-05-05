@@ -19,12 +19,15 @@ def generate_answer(query: str, context: str) -> str:
         AppException: If answer generation fails
     """
     try:
+        logger.info(f"Starting answer generation for query: '{query[:100]}...'" if len(query) > 100 else f"Starting answer generation for query: '{query}'")
+        
         # Read the RAG prompt template
         prompt_path = os.path.join(os.path.dirname(__file__), "..", "prompts", "rag_prompt.txt")
         
         if not query or not query.strip():
             raise AppException("Query cannot be empty", status_code=400)
         
+        logger.debug(f"Loading prompt template from {prompt_path}")
         try:
             with open(prompt_path, "r", encoding="utf-8") as f:
                 prompt_template = f.read()
@@ -33,14 +36,18 @@ def generate_answer(query: str, context: str) -> str:
             raise AppException("Prompt template not found", status_code=500)
         
         # Inject query and context into the template
+        logger.debug(f"Injecting query and context into prompt template")
+        logger.debug(f"Context length: {len(context)} characters")
         final_prompt = prompt_template.format(query=query, context=context)
         
         logger.info(f"Generated prompt for LLM (length: {len(final_prompt)} chars)")
         
         # Return a dummy LLM response for now
         # TODO: Replace with actual LLM API call (OpenAI, Anthropic, etc.)
+        logger.debug(f"Generating LLM response (currently using dummy response)")
         dummy_response = f"Based on the provided context, here's what I found regarding your question: '{query}'. This is a dummy response that will be replaced with actual LLM integration."
         
+        logger.info(f"Answer generation complete, response length: {len(dummy_response)} characters")
         return dummy_response
         
     except AppException:

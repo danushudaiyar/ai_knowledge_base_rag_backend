@@ -35,12 +35,15 @@ def retrieve(query: str, top_k: int = None) -> List[Dict[str, Any]]:
         if top_k <= 0:
             raise AppException("top_k must be greater than 0", status_code=400)
         
-        logger.info(f"Retrieving top {top_k} chunks for query: {query}")
+        logger.info(f"Retrieving top {top_k} chunks for query: '{query[:100]}...'" if len(query) > 100 else f"Retrieving top {top_k} chunks for query: '{query}'")
         
         # Convert query to embedding
+        logger.debug(f"Generating embedding for query")
         query_embedding = generate_embeddings([query])[0]
+        logger.debug(f"Query embedding generated, dimension: {len(query_embedding)}")
         
         # Query vector database
+        logger.debug(f"Querying vector database with n_results={top_k}")
         results = collection.query(
             query_embeddings=[query_embedding],
             n_results=top_k
@@ -49,6 +52,7 @@ def retrieve(query: str, top_k: int = None) -> List[Dict[str, Any]]:
         # Format results
         chunks = []
         if results['documents'] and results['documents'][0]:
+            logger.debug(f"Processing {len(results['documents'][0])} results from vector database")
             for i, doc in enumerate(results['documents'][0]):
                 chunk_data = {
                     'content': doc,
@@ -61,7 +65,9 @@ def retrieve(query: str, top_k: int = None) -> List[Dict[str, Any]]:
                 
                 chunks.append(chunk_data)
         
-        logger.info(f"Retrieved {len(chunks)} chunks")
+        logger.info(f"Successfully retrieved {len(chunks)} chunks for query")
+        if chunks and chunks[0].get('distance') is not None:
+            logger.debug(f"Best match distance: {chunks[0]['distance']:.4f}")
         return chunks
     except AppException:
         raise
